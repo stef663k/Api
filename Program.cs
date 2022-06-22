@@ -1,6 +1,8 @@
 
 using LoginTreasureApi.Database;
 using LoginTreasureApi.Helpers;
+using LoginTreasureApi.Interfaces;
+using LoginTreasureApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -27,6 +29,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     };
     });
 builder.Services.AddAuthorization();
+
+
+builder.Services.AddTransient<ITokenService, TokenService>();
+builder.Services.AddTransient<IUserService, UserService>();
 
 var app = builder.Build();
 

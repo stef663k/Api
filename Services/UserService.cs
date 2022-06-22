@@ -78,7 +78,7 @@ public class UserService : IUserService
     {
         var existingUser = await loginDbContext.Users
             .SingleOrDefaultAsync(user => user.UserName == signupRequest.UserName);
-        if(existingUser != null)
+        if (existingUser != null)
         {
             new SignupResponse
             {
@@ -87,7 +87,7 @@ public class UserService : IUserService
                 ErrorCode = "P06"
             };
         }
-        if(signupRequest.Password != signupRequest.ConfirmPassword)
+        if (signupRequest.Password != signupRequest.ConfirmPassword)
         {
             new SignupResponse
             {
@@ -96,7 +96,7 @@ public class UserService : IUserService
                 ErrorCode = "P08"
             };
         }
-        if (signupRequest.Password.Length <= 8 )
+        if (signupRequest.Password.Length <= 8)
         {
             new SignupResponse
             {
@@ -106,5 +106,31 @@ public class UserService : IUserService
             };
         }
 
+        var salt = PasswordHelper.GetSecureSalt();
+        var passwordHash = PasswordHelper.HashingPassword(signupRequest.Password, salt);
+
+        var user = new User
+        {
+            UserName = signupRequest.UserName,
+            Password = passwordHash,
+            PasswordSalt = Convert.ToBase64String(salt),
+            Ts = signupRequest.Ts,
+            Active = true
+        };
+        await loginDbContext.Users.AddAsync(user);
+
+        var saveResponse = await loginDbContext.SaveChangesAsync();
+
+        if(saveResponse >= 0)
+        {
+            return new SignupResponse { Success = true, UserName = user.UserName };
+        }
+
+        return new SignupResponse
+        {
+            Success = false,
+            Error = "Unable to save user",
+            ErrorCode = "P11"
+        };
     }
 }
