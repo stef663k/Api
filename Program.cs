@@ -1,5 +1,8 @@
 
 using LoginTreasureApi.Database;
+using LoginTreasureApi.Helpers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +14,19 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<LoginDbContext>(options => options.
 UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options => {
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = TokenHelper.Issuer,
+        ValidAudience = TokenHelper.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(TokenHelper.Key))
+    };
+    });
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -20,6 +36,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseHttpsRedirection();
 
