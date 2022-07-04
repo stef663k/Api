@@ -1,4 +1,5 @@
 ﻿using LoginTreasureApi.Interfaces;
+using LoginTreasureApi.Models;
 using LoginTreasureApi.Requests;
 using LoginTreasureApi.Response;
 using Microsoft.AspNetCore.Authorization;
@@ -111,6 +112,21 @@ public class UserController : BaseApiController
             return UnprocessableEntity(logout);
         }
 
+        return Ok();
+    }
+
+    [HttpGet]
+    [Route("TreasureLocations")]
+    public async Task<IActionResult> TreasureLocations(TreasureLocationsModel treasure)
+    {
+        if(treasure == null)
+        {
+            return BadRequest(new TokenResponse
+            {
+                Error = "No treasures located",
+                ErrorCode = "T01"
+            });
+        }
         return Ok();
     }
 }
